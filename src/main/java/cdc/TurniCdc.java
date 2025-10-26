@@ -12,10 +12,13 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -28,6 +31,7 @@ import javafx.stage.Stage;
 
 public class TurniCdc extends Application {
 	Label lStato = new Label("Seleziona il file");
+	Label lGiorni = new Label(" ");
 	Label lFileProff = new Label("...");
 	TreeItem<String> classi;
 	TreeItem<String> classeAttuale;
@@ -39,11 +43,19 @@ public class TurniCdc extends Application {
 	Button rimuovi;
 	Button bCoppia;
 	TextField tCoppia = new TextField();
+	ObservableList<String> giorniSettimanali = FXCollections.observableArrayList(
+		    "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato");
+	ComboBox<String> cbGiorno = new ComboBox<>(giorniSettimanali);
 
 	public void genera() {
 		
 	}
 	
+	public void impostaGiorno() {
+	    String giornoSelezionato = cbGiorno.getValue();
+	    System.out.println("Giorno selezionato: " + giornoSelezionato);
+	}
+
 	public void confronta() {
 		String coppia = tCoppia.getText();
 		Pattern pattern = Pattern.compile("(.*)(\\d[a-zA-Z]+)(.*)(\\d[a-zA-Z]+)(.*)");
@@ -155,12 +167,12 @@ public class TurniCdc extends Application {
 		   if(righe[numRiga].lastIndexOf("h00") > 0) {
 			   Matcher matcher = pattern.matcher(righe[numRiga]);
 			   if(matcher.find()) {
-				   String punti = matcher.group();
-				   righe[numRiga] = righe[numRiga].substring(righe[numRiga].indexOf(punti) + punti.length()).trim();
+				  String punti = matcher.group();
+				  righe[numRiga] = righe[numRiga].substring(righe[numRiga].indexOf(punti) + punti.length()).trim();
 			   }
 			   righe[numRiga] = righe[numRiga].substring(0, righe[numRiga].length() - 5);
 			   if(righe[numRiga].lastIndexOf(" (PP)") > 0) {
-				   righe[numRiga] = righe[numRiga].substring(0, righe[numRiga].length() - 4);
+				   righe[numRiga] = righe[numRiga].substring(0, righe[numRiga].length() - 5);
 			   }
 			   righe[numRiga] = righe[numRiga].trim();
 			   proff.add(righe[numRiga]);
@@ -171,9 +183,9 @@ public class TurniCdc extends Application {
 		bCoppia.setDisable(false);
 		avviaScansione.setDefaultButton(false);
 		bCoppia.setDefaultButton(true);
+		lStato.setText("Proponi le coppie di classi");
 	}
 
-	//TO-DO: Aggiungere giorno libero
 	public void start(Stage f) {
 		bCoppia = new Button("confronta");
 		bCoppia.setGraphic(new ImageView("confronta.gif"));
@@ -190,7 +202,9 @@ public class TurniCdc extends Application {
 		Label lDocenti = new Label("File dei docenti");
 		p.add(lDocenti, 0, 0);
 		p.add(lFileProff, 1, 0);
-		p.add(new Label("Classi:"), 2, 0);
+		cbGiorno.setPromptText("Scegli il giorno");
+		cbGiorno.setOnAction(e -> impostaGiorno());
+		p.add(cbGiorno, 2, 0);
 		p.add(tCoppia, 2, 1);
 		p.add(bCoppia, 2, 2);
 		avviaScansione = new Button("Scansiona i proff nel file");
@@ -209,7 +223,8 @@ public class TurniCdc extends Application {
 		p.add(genera, 0, 2);
 		p.add(albero, 0, 3, 2, 1);
 		p.add(lCoppie, 2, 3);
-		p.add(lStato, 0, 4, 3 , 1);
+		p.add(lStato, 0, 4, 3, 1);
+		p.add(lGiorni, 0, 5, 3, 1);
 		f.setScene(new Scene(p, 700, 400));
 		f.setTitle("Turni");
 		f.show();
